@@ -98,7 +98,7 @@ class Launcher(ui.AppFrame):
             #print(self.point)
             arrivetime = numpy.linalg.norm(sensor.pos - self.point) / SPEED
             rand = randrange(970, 1060)/1000.0
-            rand = 1
+            #rand = 1
             sensor.time = arrivetime * rand
 
             canvas = self.find("cvScoreBoard")
@@ -118,7 +118,8 @@ class Launcher(ui.AppFrame):
     def btnSimulate_Click(self):
         x,y = sympy.symbols('x y', real=True)
         sqrt = sympy.sqrt
-        solve = sympy.solve
+        #solve = sympy.solve
+        solve = sympy.nsolve
         t12 = self.sensors[0].time - self.sensors[1].time # NW-NE
         t13 = self.sensors[0].time - self.sensors[2].time # NW-SW
         t24 = self.sensors[1].time - self.sensors[3].time # NE-SE
@@ -133,24 +134,52 @@ class Launcher(ui.AppFrame):
         B24 = sqrt(C**2 - A24**2)
         A34 = (SPEED * t34) / 2
         B34 = sqrt(C**2 - A34**2)
-        H12_H13 = solve([(x/A12)**2-((y-C)/B12)**2-1, ((x-C)/B13)**2-(y/A13)**2+1], x, y)#[0]
-        H12_H24 = solve([(x/A12)**2-((y-C)/B12)**2-1, ((x+C)/B24)**2-(y/A24)**2+1], x, y)#[0]
-        H13_H34 = solve([((x-C)/B13)**2-(y/A13)**2+1, (x/A34)**2-((y+C)/B34)**2-1], x, y)#[0]
-        H24_H34 = solve([((x+C)/B24)**2-(y/A24)**2+1, (x/A34)**2-((y+C)/B34)**2-1], x, y)#[0]
-        print(sympy.simplify((x/A12)**2-((y-C)/B12)**2-1))
-        print(sympy.simplify(((x-C)/B13)**2-(y/A13)**2+1))
+        # H12_H13 = solve([(x/A12)**2-((y-C)/B12)**2-1, ((x-C)/B13)**2-(y/A13)**2+1], x, y)#[0]
+        # H12_H24 = solve([(x/A12)**2-((y-C)/B12)**2-1, ((x+C)/B24)**2-(y/A24)**2+1], x, y)#[0]
+        # H13_H34 = solve([((x-C)/B13)**2-(y/A13)**2+1, (x/A34)**2-((y+C)/B34)**2-1], x, y)#[0]
+        # H24_H34 = solve([((x+C)/B24)**2-(y/A24)**2+1, (x/A34)**2-((y+C)/B34)**2-1], x, y)#[0]
+        # print(sympy.simplify((x/A12)**2-((y-C)/B12)**2-1))
+        # print(H12_H13)
+        # print(H12_H24)
+        # print(H13_H34)
+        # print(H24_H34)
+        # print(P213)
+        # print(P124)
+        # print(P134)
+        # print(P243)
+        # print(sympy.simplify(((x-C)/B13)**2-(y/A13)**2+1))
+        if (t12 > 0):
+            x_mark = 1
+        else:
+            x_mark = -1
+        if (t13 > 0):
+            y_mark = 1
+        else:
+            y_mark = -1
+        H12_H13 = solve(((x/A12)**2-((y-C)/B12)**2-1, ((x-C)/B13)**2-(y/A13)**2+1), (x, y), (x_mark, y_mark))
+        H12_H24 = solve(((x/A12)**2-((y-C)/B12)**2-1, ((x+C)/B24)**2-(y/A24)**2+1), (x, y), (x_mark, y_mark))
+        H13_H34 = solve((((x-C)/B13)**2-(y/A13)**2+1, (x/A34)**2-((y+C)/B34)**2-1), (x, y), (x_mark, y_mark))
+        H24_H34 = solve((((x+C)/B24)**2-(y/A24)**2+1, (x/A34)**2-((y+C)/B34)**2-1), (x, y), (x_mark, y_mark))
         P213 = numpy.array(H12_H13)
         P124 = numpy.array(H12_H24)
         P134 = numpy.array(H13_H34)
         P243 = numpy.array(H24_H34)
-        print(H12_H13)
-        print(H12_H24)
-        print(H13_H34)
-        print(H24_H34)
-        #print(P213)
-        #print(P124)
-        #print(P134)
-        #print(P243)
+        points = []
+        points.append(H12_H13)
+        points.append(H12_H24)
+        points.append(H13_H34)
+        points.append(H24_H34)
+        select = 0
+        if(x_mark > 0):
+            select += 1
+        if(y_mark > 0):
+            select += 2
+        answer = numpy.array((-points[select][0], -points[select][1]))
+        print(answer)
+        pos = arcpos2pos(answer)
+        point = self._draw_point('predict', pos, r=5, color='orange')
+
+
 
 
         # Sum of squared distance
