@@ -46,5 +46,5 @@ def draw_scoreboard(canvas):
     canvas.draw_circle(r=39, fill="#fff535", outline="black", width=0.2)
     canvas.draw_circle(r=19, fill="#fff535", outline="black", width=0.1)
     # draw cross
-    canvas.draw_horizon(l=4, fill="black", width=0.1)
-    canvas.draw_vertical(l=4, fill="black", width=0.1)
+    canvas.draw_horizon(l=5, fill="black", width=0.1)
+    canvas.draw_vertical(l=5, fill="black", width=0.1)
