@@ -118,116 +118,55 @@ class Launcher(ui.AppFrame):
     def btnSimulate_Click(self):
         x,y = sympy.symbols('x y', real=True)
         sqrt = sympy.sqrt
-        #solve = sympy.solve
         solve = sympy.nsolve
         t12 = self.sensors[0].time - self.sensors[1].time # NW-NE
         t13 = self.sensors[0].time - self.sensors[2].time # NW-SW
+        t14 = self.sensors[0].time - self.sensors[3].time # NW-SE
         t24 = self.sensors[1].time - self.sensors[3].time # NE-SE
         t34 = self.sensors[2].time - self.sensors[3].time # SW-SE
 
-        C = SENSOR_POSITION
-        A12 = (SPEED * t12) / 2
-        B12 = sqrt(C**2 - A12**2)
-        A13 = (SPEED * t13) / 2
-        B13 = sqrt(C**2 - A13**2)
-        A24 = (SPEED * t24) / 2
-        B24 = sqrt(C**2 - A24**2)
-        A34 = (SPEED * t34) / 2
-        B34 = sqrt(C**2 - A34**2)
-        # H12_H13 = solve([(x/A12)**2-((y-C)/B12)**2-1, ((x-C)/B13)**2-(y/A13)**2+1], x, y)#[0]
-        # H12_H24 = solve([(x/A12)**2-((y-C)/B12)**2-1, ((x+C)/B24)**2-(y/A24)**2+1], x, y)#[0]
-        # H13_H34 = solve([((x-C)/B13)**2-(y/A13)**2+1, (x/A34)**2-((y+C)/B34)**2-1], x, y)#[0]
-        # H24_H34 = solve([((x+C)/B24)**2-(y/A24)**2+1, (x/A34)**2-((y+C)/B34)**2-1], x, y)#[0]
-        # print(sympy.simplify((x/A12)**2-((y-C)/B12)**2-1))
-        # print(H12_H13)
-        # print(H12_H24)
-        # print(H13_H34)
-        # print(H24_H34)
-        # print(P213)
-        # print(P124)
-        # print(P134)
-        # print(P243)
-        # print(sympy.simplify(((x-C)/B13)**2-(y/A13)**2+1))
-        if (t12 > 0):
-            x_mark = 1
-        else:
-            x_mark = -1
-        if (t13 > 0):
-            y_mark = 1
-        else:
-            y_mark = -1
-        H12_H13 = solve(((x/A12)**2-((y-C)/B12)**2-1, ((x-C)/B13)**2-(y/A13)**2+1), (x, y), (x_mark, y_mark))
-        H12_H24 = solve(((x/A12)**2-((y-C)/B12)**2-1, ((x+C)/B24)**2-(y/A24)**2+1), (x, y), (x_mark, y_mark))
-        H13_H34 = solve((((x-C)/B13)**2-(y/A13)**2+1, (x/A34)**2-((y+C)/B34)**2-1), (x, y), (x_mark, y_mark))
-        H24_H34 = solve((((x+C)/B24)**2-(y/A24)**2+1, (x/A34)**2-((y+C)/B34)**2-1), (x, y), (x_mark, y_mark))
-        P213 = numpy.array(H12_H13)
-        P124 = numpy.array(H12_H24)
-        P134 = numpy.array(H13_H34)
-        P243 = numpy.array(H24_H34)
+        x1, y1 = self.sensors[0].pos
+        x2, y2 = self.sensors[1].pos
+        x3, y3 = self.sensors[2].pos
+        x4, y4 = self.sensors[3].pos
+        H12_H13 = solve((sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x2)**2+(y-y2)**2)-SPEED*t12,
+                         sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x3)**2+(y-y3)**2)-SPEED*t13),
+                         (x, y), (-1, -1))
+        H12_H14 = solve((sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x2)**2+(y-y2)**2)-SPEED*t12,
+                         sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x4)**2+(y-y4)**2)-SPEED*t14),
+                         (x, y), (-1, 1))
+        H13_H14 = solve((sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x3)**2+(y-y3)**2)-SPEED*t13,
+                         sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x4)**2+(y-y4)**2)-SPEED*t14),
+                         (x, y), (1, 1))
+        P23 = numpy.array((H12_H13[0], H12_H13[1]))
+        P24 = numpy.array((H12_H14[0], H12_H14[1]))
+        P34 = numpy.array((H13_H14[0], H13_H14[1]))
+        print(P23)
+        print(P24)
+        print(P34)
         points = []
-        points.append(H12_H13)
-        points.append(H12_H24)
-        points.append(H13_H34)
-        points.append(H24_H34)
-        select = 0
-        if(x_mark > 0):
-            select += 1
-        if(y_mark > 0):
-            select += 2
-        answer = numpy.array((-points[select][0], -points[select][1]))
-        print(answer)
-        pos = arcpos2pos(answer)
-        point = self._draw_point('predict', pos, r=5, color='orange')
-
-
-
-
-        # Sum of squared distance
-        #S = 
-
-        # Impact Wave Propagation
-        # young sik, Yoon's way : collect only 1/4 features(time differences)
-        # 0 1 2 3
-        # [If sensor0 is the fastest]
-        # (0-1,
-        #  0-2,
-        #  0-3,
-        #  1-2,
-        #  1-3,
-        #  2-3)
-        # [If sensor1 is the fastest] (0-1, 2-3 switch)
-        # (1-0,
-        #  1-3,
-        #  1-2,
-        #  0-3,
-        #  0-2,
-        #  3-2)
-        # [If sensor2 is the fastest] (2-0, 1-3 switch)
-        # (2-3,
-        #  2-0,
-        #  2-1,
-        #  3-0,
-        #  3-1,
-        #  0-1)
-        # [If sensor3 is the fastest] (3-0, 1-2 switch)
-        # (3-2,
-        #  3-1,
-        #  3-0,
-        #  2-1,
-        #  2-0,
-        #  1-0)
-        
+        points.append(P23)
+        points.append(P24)
+        points.append(P34)
+        AVG = numpy.array((sum([p[0] for p in points])/len(points),
+                           sum([p[1] for p in points])/len(points)))
+        posP23 = arcpos2pos(P23)
+        posP24 = arcpos2pos(P24)
+        posP34 = arcpos2pos(P34)
+        posAVG = arcpos2pos(AVG)
+        self._draw_point('P23', posP23, r=5, color='orange')
+        self._draw_point('P24', posP24, r=5, color='orange')
+        self._draw_point('P34', posP34, r=5, color='orange')
+        self._draw_point('AVG', posAVG, r=5, color='red')
 
     def btnClose_Click(self):
         self.flag_terminate = True
         return
 
 def arcpos2pos(arcpos):
-    #return tuple(map(lambda x:(x + BOARD_SIZE/2) / BOARD_SIZE * CANVAS_SIZE, arcpos))
     return (arcpos + BOARD_SIZE/2) / BOARD_SIZE * CANVAS_SIZE
 
 def pos2arcpos(pos):
-    #return tuple(map(lambda x:x / CANVAS_SIZE * BOARD_SIZE - archer.DIM/2, pos))
     return pos / CANVAS_SIZE * BOARD_SIZE - BOARD_SIZE/2
 
 if __name__ == '__main__':
