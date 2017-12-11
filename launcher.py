@@ -51,7 +51,7 @@ class Launcher(ui.AppFrame):
         self.set("enSEx", SENSOR_POSITION)
         self.set("enSEy", SENSOR_POSITION)
         archery.DIM = CANVAS_SIZE
-        #archery.draw_scoreboard(self.find("cvScoreBoard"))
+        archery.draw_scoreboard(self.find("cvScoreBoard"))
         self.find("cvScoreBoard").config(width=CANVAS_SIZE, height=CANVAS_SIZE)
         self.elements["cvScoreBoard"].bind("<Button-1>", self._set_impact)
         self.sensors = []
@@ -130,36 +130,48 @@ class Launcher(ui.AppFrame):
         t23 = self.sensors[1].time - self.sensors[2].time # NE-SW
         t24 = self.sensors[1].time - self.sensors[3].time # NE-SE
         t34 = self.sensors[2].time - self.sensors[3].time # SW-SE
-        H12 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x2)**2+(y-y2)**2 ) - SPEED*t12
-        H13 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x3)**2+(y-y3)**2 ) - SPEED*t13
-        H14 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t14
-        H23 = sqrt( (x-x2)**2+(y-y2)**2 ) - sqrt( (x-x3)**2+(y-y3)**2 ) - SPEED*t23
-        H24 = sqrt( (x-x2)**2+(y-y2)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t24
-        H34 = sqrt( (x-x3)**2+(y-y3)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t34
-        hyperbolas = [H12, H13, H14, H23, H24, H34]
-        points = []
-        for i in range(3, 49): # from 3(b000011) to 48(b110000)
-            selection = bin(i)[2:].zfill(6)
-            if (selection.count('1') != 2):
-                continue # don't calculate if 2 hyperbolas are selected
-            if (selection in ['100001', '010010', '001100']):
-                continue # cases of no intersection
-            print(selection)
-            i1 = selection.index('1')
-            i2 = selection[i1+1:].zfill(6).index('1')
-            intersection = solve( (hyperbolas[i1],hyperbolas[i2]), (x,y), (1,1) )
-            point = numpy.array( (intersection[0], intersection[1]) )
-            points.append(point)
-            print(point)
-
-        for i in range(len(points)):
-            p = points[i]
-            pos = arcpos2pos(p)
-            self._draw_point('P'+str(i), pos, r=5, color='orange')
-        AVG = numpy.array( (sum([p[0] for p in points])/len(points),
-                            sum([p[1] for p in points])/len(points)) )
-        posAVG = arcpos2pos(AVG)
-        self._draw_point('AVG', posAVG, r=5, color='red')
+        #for c in range (500, 7500, 500):
+        for c in range (3000, 3500, 500):
+            SPEED = c * 1000
+            H12 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x2)**2+(y-y2)**2 ) - SPEED*t12
+            H13 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x3)**2+(y-y3)**2 ) - SPEED*t13
+            H14 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t14
+            H23 = sqrt( (x-x2)**2+(y-y2)**2 ) - sqrt( (x-x3)**2+(y-y3)**2 ) - SPEED*t23
+            H24 = sqrt( (x-x2)**2+(y-y2)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t24
+            H34 = sqrt( (x-x3)**2+(y-y3)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t34
+            hyperbolas = [H12, H13, H14, H23, H24, H34]
+            points = []
+            for i in range(3, 49): # from 3(b000011) to 48(b110000)
+                selection = bin(i)[2:].zfill(6)
+                if (selection.count('1') != 2):
+                    continue # don't calculate if 2 hyperbolas are selected
+                if (selection in ['100001', '010010', '001100']):
+                    continue # cases of no intersection
+                print(selection)
+                i1 = selection.index('1')
+                i2 = selection[i1+1:].zfill(6).index('1')
+                if (selection == '000011'):
+                    vector = (1,1)
+                elif (selection == '000101'):
+                    vector = (1,-1)
+                elif (selection == '000110'):
+                    vector = (-1,1)
+                else:
+                    vector = (1,1)
+                intersection = solve( (hyperbolas[i1],hyperbolas[i2]), (x,y), vector )
+                point = numpy.array( (intersection[0], intersection[1]) )
+                points.append(point)
+                print(point)
+    
+            for i in range(len(points)):
+                p = points[i]
+                pos = arcpos2pos(p)
+                self._draw_point('P'+str(i), pos, r=5, color='orange')
+            AVG = numpy.array( (sum([p[0] for p in points])/len(points),
+                                sum([p[1] for p in points])/len(points)) )
+            posAVG = arcpos2pos(AVG)
+            self._draw_point('AVG', posAVG, r=5, color='red')
+            self.update()
 
     def btnClose_Click(self):
         self.flag_terminate = True
