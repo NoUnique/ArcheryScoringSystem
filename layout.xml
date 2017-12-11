@@ -17,6 +17,7 @@
         <Label name="lbSWy" width="4" row="4" column="1"/>
         <Label name="lbSEx" width="4" row="3" column="4"/>
         <Label name="lbSEy" width="4" row="4" column="4"/>
+        <Label name="lbState" width="8" row="2" column="0" columnspan="2"/>
         <Canvas name="cvScoreBoard" width="400" height="400" row="2" column="2"/>
     </LabelFrame>
     <LabelFrame name="lfScore" text="Score" borderwidth="2" relief="groove" width="20" row="1" column="0" columnspan="11">
@@ -44,7 +45,9 @@
         <Entry name="enTotal" width="7" row="1" column="10"/>
     </LabelFrame>
 
-    <Button name="btnSet" text="Set Sensors" width="11" row="98" column="0"/>
-    <Button name="btnSimulate" text="Reset" width="11" row="99" column="0"/>
-    <Button name="btnClose" text="Close" width="11" row="99" column="2"/>
+    <Button name="btnReset" text="Reset" width="10" row="98" column="0"/>
+    <Button name="btnSimulate" text="Simulate" width="10" row="98" column="1"/>
+    <Button name="btnSet" text="Set Sensors" width="10" row="98" column="2"/>
+    <Button name="btnModify" text="Modify Score" width="10" row="99" column="0"/>
+    <Button name="btnClose" text="Close" width="10" row="99" column="2"/>
 </Frame>
