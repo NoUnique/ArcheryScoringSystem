@@ -51,7 +51,7 @@ class Launcher(ui.AppFrame):
         self.set("enSEx", SENSOR_POSITION)
         self.set("enSEy", SENSOR_POSITION)
         archery.DIM = CANVAS_SIZE
-        archery.draw_scoreboard(self.find("cvScoreBoard"))
+        #archery.draw_scoreboard(self.find("cvScoreBoard"))
         self.find("cvScoreBoard").config(width=CANVAS_SIZE, height=CANVAS_SIZE)
         self.elements["cvScoreBoard"].bind("<Button-1>", self._set_impact)
         self.sensors = []
@@ -82,13 +82,13 @@ class Launcher(ui.AppFrame):
 
     def _init_sensors(self):
         for dir in ['NW', 'NE', 'SW', 'SE']:
-            arcpos = numpy.array((float(self.get("en"+dir+"x")), float(self.get("en"+dir+"y"))))
+            arcpos = numpy.array( (float(self.get("en"+dir+"x")), float(self.get("en"+dir+"y"))) )
             pos = arcpos2pos(arcpos)
             self._draw_point('sensor'+dir, pos, r=10, color='red')
             self.sensors.append(self.Sensor(dir, arcpos))
 
     def _set_impact(self, event):
-        pos = numpy.array((event.x, event.y)) - 1 # canvas point offset
+        pos = numpy.array( (event.x, event.y) ) - 1 # canvas point offset
         arcpos = pos2arcpos(pos)
         self.point = numpy.array(arcpos)
         point = self._draw_point('impact', pos, r=5, color='green')
@@ -119,44 +119,46 @@ class Launcher(ui.AppFrame):
         x,y = sympy.symbols('x y', real=True)
         sqrt = sympy.sqrt
         solve = sympy.nsolve
+
+        x1, y1 = self.sensors[0].pos # NW
+        x2, y2 = self.sensors[1].pos # NE
+        x3, y3 = self.sensors[2].pos # SW
+        x4, y4 = self.sensors[3].pos # SE
         t12 = self.sensors[0].time - self.sensors[1].time # NW-NE
         t13 = self.sensors[0].time - self.sensors[2].time # NW-SW
         t14 = self.sensors[0].time - self.sensors[3].time # NW-SE
+        t23 = self.sensors[1].time - self.sensors[2].time # NE-SW
         t24 = self.sensors[1].time - self.sensors[3].time # NE-SE
         t34 = self.sensors[2].time - self.sensors[3].time # SW-SE
-
-        x1, y1 = self.sensors[0].pos
-        x2, y2 = self.sensors[1].pos
-        x3, y3 = self.sensors[2].pos
-        x4, y4 = self.sensors[3].pos
-        H12_H13 = solve((sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x2)**2+(y-y2)**2)-SPEED*t12,
-                         sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x3)**2+(y-y3)**2)-SPEED*t13),
-                         (x, y), (-1, -1))
-        H12_H14 = solve((sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x2)**2+(y-y2)**2)-SPEED*t12,
-                         sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x4)**2+(y-y4)**2)-SPEED*t14),
-                         (x, y), (-1, 1))
-        H13_H14 = solve((sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x3)**2+(y-y3)**2)-SPEED*t13,
-                         sqrt((x-x1)**2+(y-y1)**2)-sqrt((x-x4)**2+(y-y4)**2)-SPEED*t14),
-                         (x, y), (1, 1))
-        P23 = numpy.array((H12_H13[0], H12_H13[1]))
-        P24 = numpy.array((H12_H14[0], H12_H14[1]))
-        P34 = numpy.array((H13_H14[0], H13_H14[1]))
-        print(P23)
-        print(P24)
-        print(P34)
+        H12 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x2)**2+(y-y2)**2 ) - SPEED*t12
+        H13 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x3)**2+(y-y3)**2 ) - SPEED*t13
+        H14 = sqrt( (x-x1)**2+(y-y1)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t14
+        H23 = sqrt( (x-x2)**2+(y-y2)**2 ) - sqrt( (x-x3)**2+(y-y3)**2 ) - SPEED*t23
+        H24 = sqrt( (x-x2)**2+(y-y2)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t24
+        H34 = sqrt( (x-x3)**2+(y-y3)**2 ) - sqrt( (x-x4)**2+(y-y4)**2 ) - SPEED*t34
+        hyperbolas = [H12, H13, H14, H23, H24, H34]
         points = []
-        points.append(P23)
-        points.append(P24)
-        points.append(P34)
-        AVG = numpy.array((sum([p[0] for p in points])/len(points),
-                           sum([p[1] for p in points])/len(points)))
-        posP23 = arcpos2pos(P23)
-        posP24 = arcpos2pos(P24)
-        posP34 = arcpos2pos(P34)
+        for i in range(3, 49): # from 3(b000011) to 48(b110000)
+            selection = bin(i)[2:].zfill(6)
+            if (selection.count('1') != 2):
+                continue # don't calculate if 2 hyperbolas are selected
+            if (selection in ['100001', '010010', '001100']):
+                continue # cases of no intersection
+            print(selection)
+            i1 = selection.index('1')
+            i2 = selection[i1+1:].zfill(6).index('1')
+            intersection = solve( (hyperbolas[i1],hyperbolas[i2]), (x,y), (1,1) )
+            point = numpy.array( (intersection[0], intersection[1]) )
+            points.append(point)
+            print(point)
+
+        for i in range(len(points)):
+            p = points[i]
+            pos = arcpos2pos(p)
+            self._draw_point('P'+str(i), pos, r=5, color='orange')
+        AVG = numpy.array( (sum([p[0] for p in points])/len(points),
+                            sum([p[1] for p in points])/len(points)) )
         posAVG = arcpos2pos(AVG)
-        self._draw_point('P23', posP23, r=5, color='orange')
-        self._draw_point('P24', posP24, r=5, color='orange')
-        self._draw_point('P34', posP34, r=5, color='orange')
         self._draw_point('AVG', posAVG, r=5, color='red')
 
     def btnClose_Click(self):
