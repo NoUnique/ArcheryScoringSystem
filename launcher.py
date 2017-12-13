@@ -49,13 +49,16 @@ class Launcher(ui.AppFrame):
             self.time = 0.0
             print(self.pos)
 
+    def _delete_point(self, name):
+        canvas = self.find("cvScoreBoard")
+        if(name in self.elements):
+            canvas.delete(self.elements[name])
+
     def _draw_point(self, name, pos, r=5, color='green'):
         canvas = self.find("cvScoreBoard")
         point = canvas.create_oval(pos[0]-r/2+1, pos[1]-r/2+1, pos[0]+r/2+1, pos[1]+r/2+1,
                                    fill=color)
-        if(name in self.elements):
-            canvas.delete(self.elements[name])
-            pass
+        self._delete_point(name)
         self.elements[name] = point
 
     def change_state(self, *args):
@@ -130,6 +133,12 @@ class Launcher(ui.AppFrame):
         pass
 
     def _reset_scores(self):
+        # delete points in canvases
+        self._delete_point('impact')
+        self._delete_point('AVG')
+        for i in range(12):
+            self._delete_point('P'+str(i))
+        # delete number in entries
         for i in range(10):
             self.set("enShot"+str(i+1), "")
         self.state.set(1)
