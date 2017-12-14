@@ -6,15 +6,19 @@ from PIL import Image, ImageTk, ImageDraw
 from random import randrange
 import numpy
 import sympy
+import serial
+import time
 
 DEFAULT_DIR = "./data"
 SAVE_DIR = "./patches"
 CONFIG_FILE = "config.txt"
+SERIAL_EOL = b'\n'
 
-CANVAS_SIZE = 400 # pixels
+CANVAS_SIZE = 500 # pixels
 BOARD_SIZE = 800 # mm
 SENSOR_POSITION = BOARD_SIZE / 2 # mm
 SPEED = 3000 * 1000 # mm/s
+TIME_INTERVAL = 3 # seconds
 
 dist = numpy.linalg.norm
 
@@ -34,13 +38,56 @@ class Launcher(ui.AppFrame):
         self.elements["cvScoreBoard"].bind("<Button-1>", self._set_impact)
         self.sensors = []
         self.text = {}
+        self.detect_time = 0
         self._init_sensors()
+        self._init_serial()
 
     def run(self):
         while (self.flag_terminate is not True):
             #self.update_idletasks()
             common.delay()
+            if time.time() > self.detect_time + TIME_INTERVAL:
+                try:
+                    self._read_sensors()
+                except:
+                    print("Error: Unable to read a sensor")
+                # predict when all sensors are read
+                check = True
+                for sensor in self.sensors:
+                    if sensor.time <= 0.0:
+                        check = False
+                if check == True:
+                    self.detect_time = time.time()
+                    self._predict()
+                    for sensor in self.sensors:
+                        sensor.time = 0
+
+            # update display
             self.update()
+
+    def _read_sensors(self):
+        buffer = b''
+        while True:
+            c = self.serial.read(1)
+            if c:
+                if c == SERIAL_EOL:
+                    break
+                elif c == b'\r':
+                    pass
+                else:
+                    buffer += c
+            else:
+                break
+        data = buffer.decode('utf-8')
+        if buffer:
+            print(data)
+            i, time = data.split(':')
+            i = int(i)-1
+            time  = float(time) / 1000000.0 # micro second
+            print(time)
+            if self.sensors[i].time == 0:
+                self.sensors[i].time = time
+                self._print_time(self.sensors[i])
 
     class Sensor():
         def __init__(self, name, pos):
@@ -105,6 +152,25 @@ class Launcher(ui.AppFrame):
             self._draw_point('sensor'+dir, pos, r=10, color='red')
             self.sensors.append(self.Sensor(dir, arcpos))
 
+    def _init_serial(self):
+        self.serial = serial.Serial(port='COM3',
+                                    baudrate=9600,
+                                    parity=serial.PARITY_NONE,
+                                    stopbits=serial.STOPBITS_ONE,
+                                    bytesize=serial.EIGHTBITS,
+                                    timeout=0)
+
+    def _print_time(self, sensor):
+        canvas = self.find("cvScoreBoard")
+        pos = arcpos2pos(sensor.pos) + 1 # canvas point offset
+        timetext = canvas.create_text(pos[0], pos[1],
+                                      fill="green",
+                                      anchor=sensor.name.lower(),
+                                      text='{0:.8f}'.format(round(sensor.time, 8)))
+        if(sensor.name in self.text):
+            canvas.delete(self.text[sensor.name])
+        self.text[sensor.name] = timetext
+
     def _set_impact(self, event):
         pos = numpy.array( (event.x, event.y) ) - 1 # canvas point offset
         arcpos = pos2arcpos(pos)
@@ -118,19 +184,7 @@ class Launcher(ui.AppFrame):
             #rand = 1
             sensor.time = numpy.linalg.norm(sensor.pos - self.point)\
                           /(SPEED * rand)
-
-            canvas = self.find("cvScoreBoard")
-            pos = arcpos2pos(sensor.pos) + 1 # canvas point offset
-            timetext = canvas.create_text(pos[0], pos[1],
-                                          fill="green",
-                                          anchor=sensor.name.lower(),
-                                          text='{0:.8f}'.format(round(sensor.time, 8)))
-            if(sensor.name in self.text):
-                canvas.delete(self.text[sensor.name])
-            self.text[sensor.name] = timetext
-
-    def _estimate_score(self, pos):
-        pass
+            self._print_time(sensor)
 
     def _reset_scores(self):
         # delete points in canvases
@@ -173,14 +227,14 @@ class Launcher(ui.AppFrame):
                 continue # don't calculate if 2 hyperbolas are selected
             if (selection in ['100001', '010010', '001100']):
                 continue # cases of no intersection
-            print(selection)
+            #print(selection)
             i1 = selection.index('1')
             i2 = selection[i1+1:].zfill(6).index('1')
             vector = (1,1)
             intersection = solve( (hyperbolas[i1],hyperbolas[i2]), (x,y), vector )
             point = numpy.array( (intersection[0], intersection[1]) )
             points.append(point)
-            print(point)
+            #print(point)
 
         for i in range(len(points)):
             p = points[i]

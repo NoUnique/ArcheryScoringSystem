@@ -12,20 +12,18 @@ void loop() {
   
   if(sensor1 > THRESHOLD) {
     Serial.print("1:");
-    Serial.println(millis(), DEC);//Print the analog value read via serial port
+    Serial.println(micros(), DEC);//Print the analog value read via serial port
   }
   if(sensor2 > THRESHOLD) {
     Serial.print("2:");
-    Serial.println(millis(), DEC);//Print the analog value read via serial port
+    Serial.println(micros(), DEC);//Print the analog value read via serial port
   }
   if(sensor3 > THRESHOLD) {
     Serial.print("3:");
-    Serial.println(millies(), DEC);//Print the analog value read via serial port
+    Serial.println(micros(), DEC);//Print the analog value read via serial port
   }
   if(sensor4 > THRESHOLD) {
     Serial.print("4:");
-    Serial.println(millies(), DEC);//Print the analog value read via serial port
+    Serial.println(micros(), DEC);//Print the analog value read via serial port
   }
-  
-  //delay(100);
 }

@@ -3,6 +3,7 @@ from math import sqrt
 
 DIM = 400 # pixels
 DIA = 800 # mm
+WEIGHT = 0.2 # pixels
 
 def _draw_circle(self, r, **kwargs):
     r = r / DIA * DIM
@@ -45,17 +46,17 @@ def draw_scoreboard(canvas):
     canvas.draw_circle = types.MethodType(_draw_circle, canvas)
     canvas.draw_horizon= types.MethodType(_draw_horizon, canvas)
     canvas.draw_vertical= types.MethodType(_draw_vertical, canvas)
-    canvas.draw_circle(r=AREA1, fill="white", outline="black", width=0.2)
-    canvas.draw_circle(r=AREA2, fill="white", outline="black", width=0.2)
+    canvas.draw_circle(r=AREA1-1, fill="white", outline="black", width=WEIGHT)
+    canvas.draw_circle(r=AREA2, fill="white", outline="black", width=WEIGHT)
     canvas.draw_circle(r=AREA3, fill="black")
-    canvas.draw_circle(r=AREA4, fill="black", outline="white", width=0.2)
+    canvas.draw_circle(r=AREA4, fill="black", outline="white", width=WEIGHT)
     canvas.draw_circle(r=AREA5, fill="#41b7c8")    
-    canvas.draw_circle(r=AREA6, fill="#41b7c8", outline="black", width=0.2)
-    canvas.draw_circle(r=AREA7, fill="#fd1b14", outline="black", width=0.2)
-    canvas.draw_circle(r=AREA8, fill="#fd1b14", outline="black", width=0.2)
-    canvas.draw_circle(r=AREA9, fill="#fff535", outline="black", width=0.2)
-    canvas.draw_circle(r=AREA10, fill="#fff535", outline="black", width=0.2)
-    canvas.draw_circle(r=AREA10/2, fill="#fff535", outline="black", width=0.1)
+    canvas.draw_circle(r=AREA6, fill="#41b7c8", outline="black", width=WEIGHT)
+    canvas.draw_circle(r=AREA7, fill="#fd1b14", outline="black", width=WEIGHT)
+    canvas.draw_circle(r=AREA8, fill="#fd1b14", outline="black", width=WEIGHT)
+    canvas.draw_circle(r=AREA9, fill="#fff535", outline="black", width=WEIGHT)
+    canvas.draw_circle(r=AREA10, fill="#fff535", outline="black", width=WEIGHT)
+    canvas.draw_circle(r=AREA10/2, fill="#fff535", outline="black", width=WEIGHT/2)
     # draw cross
     canvas.draw_horizon(l=5, fill="black", width=0.1)
     canvas.draw_vertical(l=5, fill="black", width=0.1)
