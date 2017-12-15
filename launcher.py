@@ -14,11 +14,11 @@ SAVE_DIR = "./patches"
 CONFIG_FILE = "config.txt"
 SERIAL_EOL = b'\n'
 
-CANVAS_SIZE = 500 # pixels
+CANVAS_SIZE = 600 # pixels
 BOARD_SIZE = 800 # mm
 SENSOR_POSITION = BOARD_SIZE / 2 # mm
-SPEED = 3000 * 1000 # mm/s
-TIME_INTERVAL = 3 # seconds
+SPEED = 50 * 1000 # mm/s
+TIME_INTERVAL = 7 # seconds
 
 dist = numpy.linalg.norm
 
@@ -49,45 +49,59 @@ class Launcher(ui.AppFrame):
             if time.time() > self.detect_time + TIME_INTERVAL:
                 try:
                     self._read_sensors()
-                except:
+                except Exception as e:
                     print("Error: Unable to read a sensor")
+                    print(e)
                 # predict when all sensors are read
                 check = True
                 for sensor in self.sensors:
                     if sensor.time <= 0.0:
                         check = False
                 if check == True:
-                    self.detect_time = time.time()
-                    self._predict()
+                    try:
+                        self._predict()
+                    except Exception as p:
+                        print("Error: Unable to predict")
+                        print(p)
                     for sensor in self.sensors:
                         sensor.time = 0
+                    self.detect_time = time.time()
 
             # update display
             self.update()
 
     def _read_sensors(self):
-        buffer = b''
         while True:
             c = self.serial.read(1)
             if c:
                 if c == SERIAL_EOL:
+                    self.buffer_end = True
                     break
                 elif c == b'\r':
                     pass
                 else:
-                    buffer += c
+                    self.buffer += c
             else:
                 break
-        data = buffer.decode('utf-8')
-        if buffer:
+        if self.buffer_end:
+            data = self.buffer.decode('utf-8').split('@')
             print(data)
-            i, time = data.split(':')
-            i = int(i)-1
-            time  = float(time) / 1000000.0 # micro second
-            print(time)
-            if self.sensors[i].time == 0:
-                self.sensors[i].time = time
+            for i in range(4):
+                if(i == 0):
+                    offset = 1000
+                elif(i == 1):
+                    offset = 0
+                elif(i == 2):
+                    offset = 0
+                else:
+                    offset = 0
+
+                self.sensors[i].time = (float(data[i]) + offset)\
+                                        / 1000000.0 # micro second
                 self._print_time(self.sensors[i])
+
+            self.buffer = b''
+            self.buffer_end = False
 
     class Sensor():
         def __init__(self, name, pos):
@@ -153,12 +167,14 @@ class Launcher(ui.AppFrame):
             self.sensors.append(self.Sensor(dir, arcpos))
 
     def _init_serial(self):
-        self.serial = serial.Serial(port='COM3',
+        self.serial = serial.Serial(port='COM4',
                                     baudrate=9600,
                                     parity=serial.PARITY_NONE,
                                     stopbits=serial.STOPBITS_ONE,
                                     bytesize=serial.EIGHTBITS,
                                     timeout=0)
+        self.buffer = b''
+        self.buffer_end = False
 
     def _print_time(self, sensor):
         canvas = self.find("cvScoreBoard")

@@ -1,26 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Frame version="0.1.171122">
-    <LabelFrame name="lfScoreBoard" text="Score Board" borderwidth="2" relief="groove" width="20" row="0" column="0" columnspan="3">
-        <Entry name="enNWx" bg="white" width="11" row="0" column="0"/>
-        <Entry name="enNWy" bg="white" width="11" row="1" column="0"/>
-        <Entry name="enNEx" bg="white" width="11" row="0" column="3"/>
-        <Entry name="enNEy" bg="white" width="11" row="1" column="3"/>
-        <Entry name="enSWx" bg="white" width="11" row="3" column="0"/>
-        <Entry name="enSWy" bg="white" width="11" row="4" column="0"/>
-        <Entry name="enSEx" bg="white" width="11" row="3" column="3"/>
-        <Entry name="enSEy" bg="white" width="11" row="4" column="3"/>
-        <Label name="lbNWx" width="4" row="0" column="1"/>
-        <Label name="lbNWy" width="4" row="1" column="1"/>
-        <Label name="lbNEx" width="4" row="0" column="4"/>
-        <Label name="lbNEy" width="4" row="1" column="4"/>
-        <Label name="lbSWx" width="4" row="3" column="1"/>
-        <Label name="lbSWy" width="4" row="4" column="1"/>
-        <Label name="lbSEx" width="4" row="3" column="4"/>
-        <Label name="lbSEy" width="4" row="4" column="4"/>
-        <Label name="lbState" width="8" row="2" column="0" columnspan="2"/>
+    <LabelFrame name="lfScoreBoard" text="Score Board" borderwidth="2" relief="groove" width="20" row="0" column="0">
         <Canvas name="cvScoreBoard" width="400" height="400" row="2" column="2"/>
     </LabelFrame>
-    <LabelFrame name="lfScore" text="Score" borderwidth="2" relief="groove" width="20" row="1" column="0" columnspan="11">
+    <LabelFrame name="lfScore" text="Score" borderwidth="2" relief="groove" width="20" row="1" column="0">
         <Label name="lbShot1" width="7" row="0" column="0"/>
         <Label name="lbShot2" width="7" row="0" column="1"/>
         <Label name="lbShot3" width="7" row="0" column="2"/>
@@ -44,10 +27,30 @@
         <Entry name="enShot10" width="7" row="1" column="9"/>
         <Entry name="enTotal" width="7" row="1" column="10"/>
     </LabelFrame>
-
-    <Button name="btnReset" text="Reset" width="10" row="98" column="0"/>
-    <Button name="btnSimulate" text="Simulate" width="10" row="98" column="1"/>
-    <Button name="btnSet" text="Set Sensors" width="10" row="98" column="2"/>
-    <Button name="btnModify" text="Modify Score" width="10" row="99" column="0"/>
-    <Button name="btnClose" text="Close" width="10" row="99" column="2"/>
+    <LabelFrame name="lfSensor" text="Sensor Position" borderwidth="2" relief="groove" width="20" row="0" column="1">
+        <Entry name="enNWx" bg="white" width="11" row="0" column="0"/>
+        <Entry name="enNWy" bg="white" width="11" row="1" column="0"/>
+        <Entry name="enNEx" bg="white" width="11" row="0" column="3"/>
+        <Entry name="enNEy" bg="white" width="11" row="1" column="3"/>
+        <Entry name="enSWx" bg="white" width="11" row="3" column="0"/>
+        <Entry name="enSWy" bg="white" width="11" row="4" column="0"/>
+        <Entry name="enSEx" bg="white" width="11" row="3" column="3"/>
+        <Entry name="enSEy" bg="white" width="11" row="4" column="3"/>
+        <Label name="lbNWx" width="4" row="0" column="1"/>
+        <Label name="lbNWy" width="4" row="1" column="1"/>
+        <Label name="lbNEx" width="4" row="0" column="4"/>
+        <Label name="lbNEy" width="4" row="1" column="4"/>
+        <Label name="lbSWx" width="4" row="3" column="1"/>
+        <Label name="lbSWy" width="4" row="4" column="1"/>
+        <Label name="lbSEx" width="4" row="3" column="4"/>
+        <Label name="lbSEy" width="4" row="4" column="4"/>
+        <Label name="lbState" width="8" row="99" column="0" columnspan="2"/>
+    </LabelFrame>
+    <LabelFrame name="lfButton" text="Buttons" borderwidth="2" relief="groove" width="20" row="1" column="1">
+    	<Button name="btnReset" text="Reset" width="10" row="98" column="0"/>
+    	<Button name="btnSimulate" text="Simulate" width="10" row="98" column="1"/>
+    	<Button name="btnSet" text="Set Sensors" width="10" row="98" column="2"/>
+    	<Button name="btnModify" text="Modify Score" width="10" row="99" column="0"/>
+    	<Button name="btnClose" text="Close" width="10" row="99" column="2"/>
+    </LabelFrame>
 </Frame>

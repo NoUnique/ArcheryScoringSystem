@@ -1,29 +1,46 @@
+int THRESHOLD = 10;
+bool detected[4];
+unsigned long value[4];
+unsigned long sensor[4];
+unsigned long detected_time = micros();
+
 void setup() {
   Serial.begin(9600);
+  
+  for(int i=0;i<4;i++) {
+    detected[i] = false;
+    value[i] = 0;
+  }
 }
 
 void loop() {
-  unsigned long sensor1, sensor2, sensor3, sensor4;
-  int THRESHOLD = 1;
-  sensor1 = analogRead(0);
-  sensor2 = analogRead(1);
-  sensor3 = analogRead(2);
-  sensor4 = analogRead(3);
-  
-  if(sensor1 > THRESHOLD) {
-    Serial.print("1:");
-    Serial.println(micros(), DEC);//Print the analog value read via serial port
-  }
-  if(sensor2 > THRESHOLD) {
-    Serial.print("2:");
-    Serial.println(micros(), DEC);//Print the analog value read via serial port
-  }
-  if(sensor3 > THRESHOLD) {
-    Serial.print("3:");
-    Serial.println(micros(), DEC);//Print the analog value read via serial port
-  }
-  if(sensor4 > THRESHOLD) {
-    Serial.print("4:");
-    Serial.println(micros(), DEC);//Print the analog value read via serial port
+  if((micros() - detected_time) > 5000000) {
+    for(int i=0;i<4;i++) {
+      sensor[i] = analogRead(i);
+      //Serial.print(sensor[i]);
+      //Serial.print("@@@");
+      if((sensor[i] > THRESHOLD) && (detected[i] == false)) {
+        value[i] = micros();
+        detected[i] = true;
+      }
+    }
+    //Serial.println("");
+    if(detected[0] && detected[1] && detected[2] && detected[3]) {
+      for(int i=0;i<3;i++) {
+        Serial.print(value[i]);
+        Serial.print("@");
+      }
+      Serial.println(value[3]);
+      for(int i=0;i<4;i++) {
+        detected[i] = false;
+      }
+      detected_time = micros();
+    }
+    //else {
+    //  for(int i=0;i<4;i++) {
+    //    value[i] = 0;
+    //    detected[i] = false;
+    //  }
+    //}
   }
 }
